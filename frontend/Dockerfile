@@ -21,7 +21,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy remaining frontend source code
-COPY . .
+COPY frontend/. .
 
 # Compile optimized static bundle into /app/dist
 RUN npm run build
@@ -42,8 +42,8 @@ ENV PORT=80
 ENV BACKEND_URL=http://backend:8080
 
 # Template for dynamic environment substitution (envsubst)
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy compiled static distribution files from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
