@@ -35,6 +35,7 @@ public class AuthProfileController {
         this.jwtUtil = jwtUtil;
     }
 
+    
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
         String username = loginRequest.get("username");
