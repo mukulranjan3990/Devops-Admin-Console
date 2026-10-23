@@ -32,10 +32,12 @@ services:
       RDS_DB_NAME: adminportal
       RDS_USERNAME: root
       RDS_PASSWORD: rootpassword
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
 
     volumes:
       # Format: ./<host-path>:<container-path>:ro
-      - ./data/database.json:/app/data/database.json:ro
+      - ./data/database.json:/app/data/database.json
       
     depends_on:
       mysql-db:

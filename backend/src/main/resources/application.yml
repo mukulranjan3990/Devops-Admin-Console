@@ -17,7 +17,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true        #by default it was flase, but I have changed it to true for debugging purpose, you can change it back to false in production
     open-in-view: false
     properties:
       hibernate:
