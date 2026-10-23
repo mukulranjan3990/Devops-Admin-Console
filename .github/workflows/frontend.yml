@@ -80,7 +80,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: .frontend
           file: ./frontend/Dockerfile
           target: production
           platforms: linux/amd64,linux/arm64
