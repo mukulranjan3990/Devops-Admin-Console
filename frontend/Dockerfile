@@ -56,3 +56,5 @@ HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
 
 STOPSIGNAL SIGQUIT
 CMD ["nginx", "-g", "daemon off;"]
+
+#changin for the commit
