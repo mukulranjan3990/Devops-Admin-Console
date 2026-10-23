@@ -20,6 +20,21 @@ jobs:
       run:
         working-directory: ./backend
 
+  #spining up the mysql container for testing the backend
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: adminportal
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,7 +49,14 @@ jobs:
           cache: 'maven'
 
       - name: Build and test backend
+        env:
+          RDS_HOSTNAME: localhost
+          RDS_PORT: 3306
+          RDS_DB_NAME: adminportal
+          RDS_USERNAME: root
+          RDS_PASSWORD: rootpassword
         run: mvn -B clean verify
+
   
   build-and-push:
     name: Build and Push Docker Image
@@ -47,6 +69,24 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
+
+      # # Step 2: Search and Replace Database Secrets in application.yml
+      # - name: Search and Replace Datasource Secrets
+      #   env:
+      #     DB_URL: ${{ secrets.DB_URL }}
+      #     DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      #     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      #   run: |
+      #     TARGET_FILE="./backend/src/main/resources/application.yml"
+          
+      #     # Replace placeholders with secrets from GitHub Actions Secrets
+      #     sed -i "s|DB_URL_PLACEHOLDER|${DB_URL}|g" $TARGET_FILE
+      #     sed -i "s|DB_USERNAME_PLACEHOLDER|${DB_USERNAME}|g" $TARGET_FILE
+      #     sed -i "s|DB_PASSWORD_PLACEHOLDER|${DB_PASSWORD}|g" $TARGET_FILE
+
+      #     # Verification step (Masked sensitive outputs automatically by GitHub Actions)
+      #     echo "Datasource replacement complete for $TARGET_FILE"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

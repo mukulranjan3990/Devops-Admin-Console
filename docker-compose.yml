@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # 1. Database Container
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: adminportal
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # 2. Backend Container (Pulled from Docker Hub)
+  backend:
+    image: mukul3990/backend-devops-admin-console:latest
+    container_name: backend-app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      RDS_HOSTNAME: mysql-db
+      RDS_PORT: 3306
+      RDS_DB_NAME: adminportal
+      RDS_USERNAME: root
+      RDS_PASSWORD: rootpassword
+
+    volumes:
+      # Format: ./<host-path>:<container-path>:ro
+      - ./data/database.json:/app/data/database.json:ro
+      
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+  # 3. Frontend Container (Pulled from Docker Hub)
+  frontend:
+    image: mukul3990/frontend-devops-admin-console:latest
+    container_name: frontend-app
+    restart: always
+    ports:
+      - "3000:80"
+    environment:
+      PORT: 80
+      BACKEND_URL: http://backend:8080
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
