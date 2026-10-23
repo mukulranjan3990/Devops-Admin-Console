@@ -1129,6 +1129,10 @@ export default defineConfig(() => {
         '@': path.resolve(import.meta.dirname, 'src'),
       },
     },
+    build: {
+      outDir: path.resolve(import.meta.dirname, 'dist'),
+      emptyOutDir: true,
+    },
     server: {
       port: 3000,
       host: '0.0.0.0',
