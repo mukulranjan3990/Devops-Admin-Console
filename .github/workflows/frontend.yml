@@ -11,6 +11,8 @@ on:
     paths:
       - 'frontend/**'
 
+  workflow_dispatch:
+
 permissions:
   contents: read
 
