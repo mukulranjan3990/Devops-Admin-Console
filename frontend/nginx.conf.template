@@ -1,0 +1,61 @@
+server {
+    listen ${PORT};
+    server_name localhost;
+
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    # Gzip compression for high performance delivery
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied expired no-cache no-store private auth;
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/xml application/json image/svg+xml;
+
+    # Static asset caching for Vite hashed bundles
+    location ~* \.(?:css|js|woff2?|eot|ttf|otf|ico|png|jpg|jpeg|gif|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # Proxy REST API requests to Backend Tier
+    location /api/ {
+        proxy_pass ${BACKEND_URL}/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Proxy Spring Boot Actuator telemetry & health probes
+    location /actuator/ {
+        proxy_pass ${BACKEND_URL}/actuator/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Healthcheck endpoint for cloud load balancers (AWS ALB / GCP Cloud Run / K8s)
+    location /healthz {
+        access_log off;
+        return 200 "OK\n";
+    }
+
+    # SPA Routing: Fall back all unmatched requests to index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Custom error handling
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+    }
+}

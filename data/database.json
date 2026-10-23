@@ -47,6 +47,19 @@
   ],
   "auditLogs": [
     {
+      "id": "LOG-5765",
+      "timestamp": "2026-10-23T11:03:25.765Z",
+      "eventType": "AUTH_SUCCESS",
+      "category": "ACCESS",
+      "severity": "INFO",
+      "user": "admin",
+      "ipAddress": "10.0.12.44 (VPC)",
+      "resource": "/api/auth/login",
+      "action": "JWT Session Issued for @admin",
+      "status": "SUCCESS",
+      "details": "User @admin (ADMIN) authenticated successfully via manual credentials."
+    },
+    {
       "id": "LOG-7930",
       "timestamp": "2026-10-21T13:22:37.930Z",
       "eventType": "USER_DELETED",

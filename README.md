@@ -56,12 +56,6 @@ A production-grade, secure **Three-Tier Web Application** designed specifically 
 
 ```
 three-tier-admin-portal/
-|-- .gitignore
-|-- README.md
-|-- index.html
-|-- package.json
-|-- vite.config.js
-|
 |-- backend/                                 (Tier 2: Java Spring Boot API)
 |   |-- pom.xml
 |   `-- src/
@@ -87,17 +81,35 @@ three-tier-admin-portal/
 |           `-- resources/
 |               `-- application-test.yml
 |
-`-- frontend/                                (Tier 1: React.js Web UI)
-    |-- package.json
-    |-- vite.config.js
-    |-- index.html
-    `-- src/
-        |-- main.jsx
-        |-- App.jsx
-        |-- api.js
-        `-- components/
-            |-- LoginPage.jsx
-            `-- ProfilePage.jsx
+|-- frontend/                                (Tier 1: Isolated React.js SPA & Container)
+|   |-- Dockerfile                           (Multi-Stage Node + Nginx Docker Build)
+|   |-- nginx.conf                           (Production Nginx Config with SPA Routing)
+|   |-- .dockerignore                        (Docker build optimization exclusions)
+|   |-- package.json                         (Isolated Frontend Dependencies & Scripts)
+|   |-- package-lock.json                    (Deterministic lockfile for container builds)
+|   |-- vite.config.js                       (Standalone Vite & Fallback Plugin)
+|   |-- index.html                           (Standalone HTML Entry Point)
+|   `-- src/
+|       |-- App.jsx
+|       |-- main.jsx
+|       |-- index.css
+|       |-- api.js
+|       `-- components/
+|           |-- Dashboard.jsx
+|           |-- LoginPage.jsx
+|           |-- UserManagement.jsx
+|           |-- UserWorkspace.jsx
+|           |-- AuditLogs.jsx
+|           |-- ProfilePage.jsx
+|           |-- ServerHealthWidget.jsx
+|           `-- ForgotPasswordModal.jsx
+|
+|-- data/                                    (Tier 3: Database & State Store)
+|   `-- database.json                        (Persistent users and audit records)
+|
+|-- package.json                             (Root monorepo workspace runner)
+|-- .gitignore
+`-- README.md
 ```
 
 ---
@@ -137,44 +149,45 @@ On first boot against a new RDS instance, the backend seeds:
 
 ---
 
-## 6. AWS RDS & DevOps Deployment Guide
+## 6. Cloud & Container Deployment Guide
 
-### A. Backend Build & Execution
+### A. Frontend Isolated Docker Container (`frontend/Dockerfile`)
+Built with a multi-stage `node:20-alpine` (builder) and `nginx:1.27-alpine` (runtime) supporting dynamic `$PORT` and `$BACKEND_URL` for Google Cloud Run, AWS App Runner, ECS, or Kubernetes:
+
 ```bash
-# 1. Run automated unit tests using H2 in-memory DB (CI pipeline)
-cd backend
-mvn clean test -B
-
-# 2. Package production executable JAR
-mvn clean package -DskipTests -B
-
-# 3. Run JAR on EC2 or container with AWS RDS environment variables
-export RDS_HOSTNAME="your-rds-cluster.cxxxxxx.us-east-1.rds.amazonaws.com"
-export RDS_PORT="3306"
-export RDS_DB_NAME="adminportal"
-export RDS_USERNAME="admin"
-export RDS_PASSWORD="YourSecureRdsPassword!"
-export JWT_SECRET="your-high-entropy-production-secret-min-32-bytes"
-
-java -jar target/three-tier-backend.jar
-```
-
-### B. Frontend Build & Static Asset Serving
-```bash
+# 1. Build the standalone frontend image directly from frontend/
 cd frontend
+docker build -t devops-portal-frontend:latest .
 
-# 1. Install dependencies
-npm install
+# 2. Run locally (mapping port 3000 to container port 80):
+docker run -d --name frontend -p 3000:80 \
+  -e BACKEND_URL="http://backend:8080" \
+  devops-portal-frontend:latest
 
-# 2. Build production assets pointing to AWS ALB or backend URL
-VITE_API_BASE_URL="https://api.yourcompany.com/api" npm run build
-
-# 3. Output located in frontend/dist/ (deploy to AWS S3 + CloudFront or Nginx)
+# 3. Cloud Run / AWS App Runner / ECS deployment (binds to dynamic $PORT):
+docker run -d -p 8080:8080 -e PORT=8080 -e BACKEND_URL="https://api.yourdomain.com" devops-portal-frontend:latest
 ```
 
-### C. AWS Health Check Configuration
-- **Health Check Protocol**: HTTP
-- **Health Check Path**: `/actuator/health/readiness`
-- **Success Code**: `200`
-- **Interval**: 10 seconds
-- **Unhealthy Threshold**: 3 failures
+### B. Backend Java 21 Spring Boot Container (`backend/Dockerfile`)
+Built with multi-stage `maven:3.9-eclipse-temurin-21` (builder) and hardened non-root `eclipse-temurin:21-jre-alpine` (runtime) with cgroup memory limits (`-XX:MaxRAMPercentage=75.0`):
+
+```bash
+# 1. Build the standalone backend image directly from backend/
+cd backend
+docker build -t devops-portal-backend:latest .
+
+# 2. Run container pointing to your AWS RDS MySQL instance:
+docker run -d --name backend -p 8080:8080 \
+  -e RDS_HOSTNAME="your-rds-cluster.cxxxxxx.us-east-1.rds.amazonaws.com" \
+  -e RDS_PORT="3306" \
+  -e RDS_DB_NAME="adminportal" \
+  -e RDS_USERNAME="admin" \
+  -e RDS_PASSWORD="YourSecureRdsPassword!" \
+  -e JWT_SECRET="your-high-entropy-production-secret-min-32-bytes" \
+  devops-portal-backend:latest
+```
+
+### C. Cloud Container Health Probes
+- **Frontend Health Check**: `GET /healthz` (returns HTTP `200 OK`)
+- **Backend Health Check**: `GET /actuator/health/readiness` (returns HTTP `200 UP` verifying database connectivity)
+
