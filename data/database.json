@@ -392,7 +392,7 @@
       "severity": "INFO",
       "user": "system-daemon",
       "ipAddress": "localhost (127.0.0.1)",
-      "resource": "Java 21 Spring Boot 3.3.4",
+      "resource": "Java 25 Spring Boot 3.5.16",
       "action": "Application Server Initialized",
       "status": "READY",
       "details": "Port 8080 listening. Graceful shutdown timeout configured to 20s."

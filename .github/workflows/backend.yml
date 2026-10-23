@@ -26,12 +26,15 @@ jobs:
         with:
           fetch-depth: 0 # 💡 Required by SonarQube for better analysis
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
+
+      - name: Build and test backend
+        run: mvn -B clean verify
   
   build-and-push:
     name: Build and Push Docker Image

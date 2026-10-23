@@ -1,6 +1,6 @@
 {
   "name": "Three-Tier Admin Portal (React + Spring Boot + RDS)",
-  "description": "Secure Three-Tier Web Application featuring a React JS frontend, Java 21 Spring Boot REST API, BCrypt authentication, JWT session validation, and AWS RDS database persistence.",
+  "description": "Secure Three-Tier Web Application featuring a React JS frontend, Java 25 Spring Boot REST API, BCrypt authentication, JWT session validation, and AWS RDS database persistence.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

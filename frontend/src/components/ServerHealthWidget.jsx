@@ -235,7 +235,7 @@ export default function ServerHealthWidget() {
                 <HardDrive className="w-3.5 h-3.5 text-indigo-400" />
                 JVM Heap Memory
               </span>
-              <span className="font-mono text-slate-500">Java 21</span>
+              <span className="font-mono text-slate-500">Java 25</span>
             </div>
 
             <div className="flex items-baseline gap-2 mt-2">

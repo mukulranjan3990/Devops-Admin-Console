@@ -167,7 +167,7 @@ const defaultAuditLogs = [
     severity: "INFO",
     user: "system-daemon",
     ipAddress: "localhost (127.0.0.1)",
-    resource: "Java 21 Spring Boot 3.3.4",
+    resource: "Java 25 Spring Boot 3.5.16",
     action: "Application Server Initialized",
     status: "READY",
     details: "Port 8080 listening. Graceful shutdown timeout configured to 20s.",
@@ -371,8 +371,8 @@ function springBootMockPlugin() {
               sslHandshake: 'TLSv1.3 AES-256-GCM',
             },
             runtime: {
-              javaVersion: 'Java 21 (LTS)',
-              springBootVersion: '3.3.4',
+              javaVersion: 'Java 25 (LTS)',
+              springBootVersion: '3.5.16',
               uptimeSeconds: Math.round(process.uptime()),
               liveThreads: 38 + Math.round(Math.random() * 6),
               peakThreads: 56,
@@ -931,8 +931,8 @@ function springBootMockPlugin() {
             })),
             systemHealth: {
               serverHostname: os.hostname(),
-              javaVersion: 'Java 21 (LTS)',
-              springBootVersion: '3.3.4',
+              javaVersion: 'Java 25 (LTS)',
+              springBootVersion: '3.5.16',
               databaseEngine: 'MySQL 8.0 on AWS RDS (Persistent)',
               securityProtocol: 'BCrypt + HMAC-SHA256 Stateless',
             },
@@ -1026,7 +1026,7 @@ function springBootMockPlugin() {
                         model: 'gemini-3.8-flash',
                         contents: promptText,
                         config: {
-                          systemInstruction: "You are the Cloud Security & DevOps Incident Response Copilot for this Three-Tier Web Application (React + Java 21 Spring Boot 3 + AWS RDS). You analyze audit logs, investigate brute force attempts, assess CVE vulnerabilities, and review AWS ALB/RDS health. Provide concise, expert, actionable guidance with code/commands.",
+                          systemInstruction: "You are the Cloud Security & DevOps Incident Response Copilot for this Three-Tier Web Application (React + Java 25 Spring Boot 3 + AWS RDS). You analyze audit logs, investigate brute force attempts, assess CVE vulnerabilities, and review AWS ALB/RDS health. Provide concise, expert, actionable guidance with code/commands.",
                         },
                       });
                     } catch (primaryErr) {
@@ -1078,7 +1078,7 @@ function springBootMockPlugin() {
               } else if (lastUserMessage.toLowerCase().includes('brute') || lastUserMessage.toLowerCase().includes('rate')) {
                 fallbackReply += `**Brute-Force & Rate-Limiting Triage**:\n- **Event LOG-9079**: IP \`198.51.100.82\` hit the 5-failure threshold and was placed in 15-second cooldown.\n- **Spring Security Recommendation**: Ensure \`BCryptPasswordEncoder\` (10 rounds) remains active. In production, consider adding AWS WAF Rate-based rule (e.g. max 100 requests per 5 minutes per IP).`;
               } else if (lastUserMessage.toLowerCase().includes('cve') || lastUserMessage.toLowerCase().includes('spring')) {
-                fallbackReply += `**Spring Boot 3.3.4 Security Posture**:\n- The application runs Java 21 (LTS) with Spring Boot 3.3.4 and Spring Security 6.\n- All database queries use Spring Data JPA prepared statements (SQL injection protected).\n- Session management is set to \`SessionCreationPolicy.STATELESS\` with HMAC-SHA256 tokens.\n- Ensure dependencies are scanned regularly with \`mvn dependency-check:check\`.`;
+                fallbackReply += `**Spring Boot 3.5.16 Security Posture**:\n- The application runs Java 25 (LTS) with Spring Boot 3.5.16 and Spring Security 6.\n- All database queries use Spring Data JPA prepared statements (SQL injection protected).\n- Session management is set to \`SessionCreationPolicy.STATELESS\` with HMAC-SHA256 tokens.\n- Ensure dependencies are scanned regularly with \`mvn dependency-check:check\`.`;
               } else {
                 fallbackReply += `**Audit Log Summary (Last 24 Hours)**:\n- **Total Logged Events**: 8 recent entries analyzed.\n- **Critical Alerts**: 2 (Unauthorized access attempt & Rate-limit trigger).\n- **System Probes**: AWS ALB health probe (\`/actuator/health/readiness\`) reported \`UP\`.\n- **User Access**: Admin login authenticated and valid JWT token issued.`;
               }
@@ -1091,7 +1091,7 @@ function springBootMockPlugin() {
                   { title: "AWS RDS Security Best Practices", url: "https://aws.amazon.com/rds/security/" },
                   { title: "Spring Boot Actuator Probes Documentation", url: "https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html" },
                 ],
-                searchQueries: ["Spring Boot 3.3.4 security best practices", "AWS RDS MySQL connection pool security"],
+                searchQueries: ["Spring Boot 3.5 security best practices", "AWS RDS MySQL connection pool security"],
                 model: 'gemini-3.8-flash',
                 grounded: true,
                 quotaNotice: quotaNotice || null,

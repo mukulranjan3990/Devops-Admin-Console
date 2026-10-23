@@ -19,7 +19,7 @@ import {
 /**
  * Secure Login Component
  * Built with pure JavaScript, Tailwind CSS, and strict client-side validation
- * Communicates with Java 21 Spring Boot Tier 2 REST endpoint (/api/auth/login)
+ * Communicates with Java 25 Spring Boot Tier 2 REST endpoint (/api/auth/login)
  */
 export default function LoginPage({ onLoginSuccess }) {
   // Input states
@@ -220,7 +220,7 @@ export default function LoginPage({ onLoginSuccess }) {
           Admin Portal Login
         </h1>
         <p className="mt-2 text-center text-xs sm:text-sm text-slate-400">
-          Java 21 Spring Boot 3 &amp; AWS RDS Session Gateway
+          Java 25 Spring Boot 3 &amp; AWS RDS Session Gateway
         </p>
       </div>
 

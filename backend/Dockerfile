@@ -1,9 +1,9 @@
 # ==============================================================================
-# Tier 2: Backend Container (Java 21 LTS + Spring Boot 3.3)
+# Tier 2: Backend Container (Java 25 LTS + Spring Boot 3.5)
 # ==============================================================================
 
 # Stage 1: Build & Package Artifact
-FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
+FROM maven:3.9.11-eclipse-temurin-25-alpine AS build
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN mvn clean package -DskipTests -B
 # ------------------------------------------------------------------------------
 # Stage 2: Production Container Runtime
 # ------------------------------------------------------------------------------
-FROM eclipse-temurin:21-jre-alpine AS production
+FROM eclipse-temurin:25-jre-alpine AS production
 
 # Install curl for AWS ECS Health Checks
 RUN apk add --no-cache curl

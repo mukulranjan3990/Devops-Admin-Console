@@ -1,4 +1,4 @@
-# Three-Tier Admin Portal (React + Java 21 Spring Boot + AWS RDS)
+# Three-Tier Admin Portal (React + Java 25 Spring Boot + AWS RDS)
 
 A production-grade, secure **Three-Tier Web Application** designed specifically for DevOps CI/CD pipelines, containerized orchestration, and AWS Cloud deployments.
 
@@ -19,7 +19,7 @@ A production-grade, secure **Three-Tier Web Application** designed specifically 
                                         v
                 +-----------------------------------------------+
                 |          Tier 2: Application Layer            |
-                |       Java 21 + Spring Boot 3.3.4 (Port 8080) |
+                |       Java 25 + Spring Boot 3.5.16 (Port 8080) |
                 |       Spring Security, BCrypt, Actuator       |
                 +-----------------------+-----------------------+
                                         |
@@ -40,7 +40,7 @@ A production-grade, secure **Three-Tier Web Application** designed specifically 
 - **UI & UX**: Tailored console interface with high-contrast, zero-pill typography, server hostname detection, live Actuator health probes, and credentials auto-fill.
 
 ### Tier 2 · Application Tier (Backend)
-- **Runtime**: Java 21 (LTS) with Spring Boot 3.3.4.
+- **Runtime**: Java 25 (LTS) with Spring Boot 3.5.16.
 - **Security**: Spring Security 6 with stateless session management, BCrypt password hashing (10 rounds), and cryptographic HMAC-SHA256 JWT tokens.
 - **Auto Data Seeding**: `AdminDataSeeder` checks `userRepository.count() == 0` on startup and seeds default admin credentials (`admin` / `admin@589`).
 - **DevOps Observability**: Spring Boot Actuator exposing `/actuator/health/liveness` and `/actuator/health/readiness` probes for AWS ALB target group health checks, coupled with graceful shutdown (`server.shutdown: graceful`).
@@ -168,7 +168,7 @@ docker run -d --name frontend -p 3000:80 \
 docker run -d -p 8080:8080 -e PORT=8080 -e BACKEND_URL="https://api.yourdomain.com" devops-portal-frontend:latest
 ```
 
-### B. Backend Java 21 Spring Boot Container (`backend/Dockerfile`)
+### B. Backend Java 25 Spring Boot Container (`backend/Dockerfile`)
 Built with multi-stage `maven:3.9-eclipse-temurin-21` (builder) and hardened non-root `eclipse-temurin:21-jre-alpine` (runtime) with cgroup memory limits (`-XX:MaxRAMPercentage=75.0`):
 
 ```bash
@@ -190,4 +190,3 @@ docker run -d --name backend -p 8080:8080 \
 ### C. Cloud Container Health Probes
 - **Frontend Health Check**: `GET /healthz` (returns HTTP `200 OK`)
 - **Backend Health Check**: `GET /actuator/health/readiness` (returns HTTP `200 UP` verifying database connectivity)
-

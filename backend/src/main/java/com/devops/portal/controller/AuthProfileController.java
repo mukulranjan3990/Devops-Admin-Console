@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.InetAddress;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -308,14 +309,14 @@ public class AuthProfileController {
         }
 
         List<Map<String, Object>> logs = List.of(
-                Map.of("id", "LOG-9081", "timestamp", "2026-10-19T14:05:48Z", "eventType", "AUTH_SUCCESS", "category", "ACCESS", "severity", "INFO", "user", adminUsername, "ipAddress", "10.0.12.44 (AWS VPC)", "resource", "/api/auth/login", "action", "JWT Bearer Token Issued (HMAC-SHA256)", "status", "SUCCESS", "details", "Authenticated via salted BCrypt password hash. Token expires in 24h."),
-                Map.of("id", "LOG-9080", "timestamp", "2026-10-19T14:02:10Z", "eventType", "ROLE_ASSIGNMENT", "category", "SECURITY", "severity", "WARN", "user", adminUsername, "ipAddress", "10.0.12.44 (AWS VPC)", "resource", "/api/users/2", "action", "Assigned ADMIN role to sarah.chen", "status", "SUCCESS", "details", "User privileges elevated to Administrator. Department: Infrastructure Architecture."),
-                Map.of("id", "LOG-9079", "timestamp", "2026-10-19T13:48:33Z", "eventType", "RATE_LIMIT_TRIGGERED", "category", "SECURITY", "severity", "CRITICAL", "user", "unknown", "ipAddress", "198.51.100.82 (External)", "resource", "/api/auth/login", "action", "Brute-force Throttling Engaged", "status", "BLOCKED", "details", "5 consecutive failed credentials. Client IP quarantined for 15s cooldown."),
-                Map.of("id", "LOG-9078", "timestamp", "2026-10-19T13:30:15Z", "eventType", "ALB_HEALTH_PROBE", "category", "SYSTEM", "severity", "INFO", "user", "aws-alb-target-group", "ipAddress", "172.31.2.10 (Internal)", "resource", "/actuator/health/readiness", "action", "Spring Boot Actuator Readiness Polled", "status", "HEALTHY", "details", "Probes UP. HikariCP database pool responsive, disk space validation OK."),
-                Map.of("id", "LOG-9077", "timestamp", "2026-10-19T12:15:00Z", "eventType", "DB_CONNECTION_LEASE", "category", "RDS", "severity", "INFO", "user", "sarah.chen", "ipAddress", "10.0.8.21 (AWS VPC)", "resource", "AWS RDS MySQL 8.0", "action", "HikariCP Connection Pool Leased", "status", "SUCCESS", "details", "Acquired connection pool lease #4. Query: UserRepository.findAll() executed in 3.2ms."),
-                Map.of("id", "LOG-9076", "timestamp", "2026-10-19T11:04:12Z", "eventType", "PASSWORD_RECOVERY_TRIGGERED", "category", "ACCESS", "severity", "WARN", "user", "admin@devopsportal.com", "ipAddress", "10.0.12.44 (AWS VPC)", "resource", "/api/auth/forgot-password", "action", "One-Time Password Reset Link Queued", "status", "QUEUED", "details", "Simulated SMTP dispatch token rst_9f8b2c4e1a0d generated. Expires in 15m."),
-                Map.of("id", "LOG-9075", "timestamp", "2026-10-19T09:20:45Z", "eventType", "UNAUTHORIZED_ACCESS_ATTEMPT", "category", "SECURITY", "severity", "CRITICAL", "user", "anonymous", "ipAddress", "203.0.113.195 (External)", "resource", "/api/profile", "action", "Bearer Token Missing or Invalid", "status", "DENIED", "details", "Request rejected with HTTP 401 Unauthorized. Null Authorization header."),
-                Map.of("id", "LOG-9074", "timestamp", "2026-10-19T08:00:00Z", "eventType", "SYSTEM_STARTUP", "category", "SYSTEM", "severity", "INFO", "user", "system-daemon", "ipAddress", "localhost (127.0.0.1)", "resource", "Java 21 Spring Boot 3.3.4", "action", "Application Server Initialized", "status", "READY", "details", "Port 8080 listening. Graceful shutdown timeout configured to 20s.")
+                Map.ofEntries(Map.entry("id", "LOG-9081"), Map.entry("timestamp", "2026-10-19T14:05:48Z"), Map.entry("eventType", "AUTH_SUCCESS"), Map.entry("category", "ACCESS"), Map.entry("severity", "INFO"), Map.entry("user", adminUsername), Map.entry("ipAddress", "10.0.12.44 (AWS VPC)"), Map.entry("resource", "/api/auth/login"), Map.entry("action", "JWT Bearer Token Issued (HMAC-SHA256)"), Map.entry("status", "SUCCESS"), Map.entry("details", "Authenticated via salted BCrypt password hash. Token expires in 24h.")),
+                Map.ofEntries(Map.entry("id", "LOG-9080"), Map.entry("timestamp", "2026-10-19T14:02:10Z"), Map.entry("eventType", "ROLE_ASSIGNMENT"), Map.entry("category", "SECURITY"), Map.entry("severity", "WARN"), Map.entry("user", adminUsername), Map.entry("ipAddress", "10.0.12.44 (AWS VPC)"), Map.entry("resource", "/api/users/2"), Map.entry("action", "Assigned ADMIN role to sarah.chen"), Map.entry("status", "SUCCESS"), Map.entry("details", "User privileges elevated to Administrator. Department: Infrastructure Architecture.")),
+                Map.ofEntries(Map.entry("id", "LOG-9079"), Map.entry("timestamp", "2026-10-19T13:48:33Z"), Map.entry("eventType", "RATE_LIMIT_TRIGGERED"), Map.entry("category", "SECURITY"), Map.entry("severity", "CRITICAL"), Map.entry("user", "unknown"), Map.entry("ipAddress", "198.51.100.82 (External)"), Map.entry("resource", "/api/auth/login"), Map.entry("action", "Brute-force Throttling Engaged"), Map.entry("status", "BLOCKED"), Map.entry("details", "5 consecutive failed credentials. Client IP quarantined for 15s cooldown.")),
+                Map.ofEntries(Map.entry("id", "LOG-9078"), Map.entry("timestamp", "2026-10-19T13:30:15Z"), Map.entry("eventType", "ALB_HEALTH_PROBE"), Map.entry("category", "SYSTEM"), Map.entry("severity", "INFO"), Map.entry("user", "aws-alb-target-group"), Map.entry("ipAddress", "172.31.2.10 (Internal)"), Map.entry("resource", "/actuator/health/readiness"), Map.entry("action", "Spring Boot Actuator Readiness Polled"), Map.entry("status", "HEALTHY"), Map.entry("details", "Probes UP. HikariCP database pool responsive, disk space validation OK.")),
+                Map.ofEntries(Map.entry("id", "LOG-9077"), Map.entry("timestamp", "2026-10-19T12:15:00Z"), Map.entry("eventType", "DB_CONNECTION_LEASE"), Map.entry("category", "RDS"), Map.entry("severity", "INFO"), Map.entry("user", "sarah.chen"), Map.entry("ipAddress", "10.0.8.21 (AWS VPC)"), Map.entry("resource", "AWS RDS MySQL 8.0"), Map.entry("action", "HikariCP Connection Pool Leased"), Map.entry("status", "SUCCESS"), Map.entry("details", "Acquired connection pool lease #4. Query: UserRepository.findAll() executed in 3.2ms.")),
+                Map.ofEntries(Map.entry("id", "LOG-9076"), Map.entry("timestamp", "2026-10-19T11:04:12Z"), Map.entry("eventType", "PASSWORD_RECOVERY_TRIGGERED"), Map.entry("category", "ACCESS"), Map.entry("severity", "WARN"), Map.entry("user", "admin@devopsportal.com"), Map.entry("ipAddress", "10.0.12.44 (AWS VPC)"), Map.entry("resource", "/api/auth/forgot-password"), Map.entry("action", "One-Time Password Reset Link Queued"), Map.entry("status", "QUEUED"), Map.entry("details", "Simulated SMTP dispatch token rst_9f8b2c4e1a0d generated. Expires in 15m.")),
+                Map.ofEntries(Map.entry("id", "LOG-9075"), Map.entry("timestamp", "2026-10-19T09:20:45Z"), Map.entry("eventType", "UNAUTHORIZED_ACCESS_ATTEMPT"), Map.entry("category", "SECURITY"), Map.entry("severity", "CRITICAL"), Map.entry("user", "anonymous"), Map.entry("ipAddress", "203.0.113.195 (External)"), Map.entry("resource", "/api/profile"), Map.entry("action", "Bearer Token Missing or Invalid"), Map.entry("status", "DENIED"), Map.entry("details", "Request rejected with HTTP 401 Unauthorized. Null Authorization header.")),
+                Map.ofEntries(Map.entry("id", "LOG-9074"), Map.entry("timestamp", "2026-10-19T08:00:00Z"), Map.entry("eventType", "SYSTEM_STARTUP"), Map.entry("category", "SYSTEM"), Map.entry("severity", "INFO"), Map.entry("user", "system-daemon"), Map.entry("ipAddress", "localhost (127.0.0.1)"), Map.entry("resource", "Java 25 Spring Boot 3.5.16"), Map.entry("action", "Application Server Initialized"), Map.entry("status", "READY"), Map.entry("details", "Port 8080 listening. Graceful shutdown timeout configured to 20s."))
         );
 
         return ResponseEntity.ok(logs);
@@ -359,25 +360,11 @@ public class AuthProfileController {
                 "osRamPercent", 45
         ));
 
-        response.put("databasePool", Map.of(
-                "engine", "MySQL 8.0 (AWS RDS)",
-                "poolName", "HikariPool-1",
-                "activeConnections", 4,
-                "idleConnections", 16,
-                "maxPoolSize", 20,
-                "minIdle", 5,
-                "totalConnections", 20,
-                "pendingThreads", 0,
-                "acquireLatencyMs", 1.84,
-                "validationQuery", "SELECT 1 (Status: OK)",
-                "rdsHostname", "rds-mysql-production.cr04a.us-east-1.rds.amazonaws.com",
-                "port", 3306,
-                "sslHandshake", "TLSv1.3 AES-256-GCM"
-        ));
+        response.put("databasePool", Map.ofEntries(Map.entry("engine", "MySQL 8.0 (AWS RDS)"), Map.entry("poolName", "HikariPool-1"), Map.entry("activeConnections", 4), Map.entry("idleConnections", 16), Map.entry("maxPoolSize", 20), Map.entry("minIdle", 5), Map.entry("totalConnections", 20), Map.entry("pendingThreads", 0), Map.entry("acquireLatencyMs", 1.84), Map.entry("validationQuery", "SELECT 1 (Status: OK)"), Map.entry("rdsHostname", "rds-mysql-production.cr04a.us-east-1.rds.amazonaws.com"), Map.entry("port", 3306), Map.entry("sslHandshake", "TLSv1.3 AES-256-GCM")));
 
         response.put("runtime", Map.of(
-                "javaVersion", "Java 21 (LTS)",
-                "springBootVersion", "3.3.4",
+                "javaVersion", "Java 25 (LTS)",
+                "springBootVersion", "3.5.16",
                 "uptimeSeconds", 86400,
                 "liveThreads", 42,
                 "peakThreads", 58,
