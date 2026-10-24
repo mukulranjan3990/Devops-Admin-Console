@@ -18,7 +18,10 @@ import {
   Layers,
   Copy,
   Check,
-  Key
+  Key,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 export default function ProfilePage({ onLogout }) {
@@ -30,6 +33,46 @@ export default function ProfilePage({ onLogout }) {
   const [copiedToken, setCopiedToken] = useState(false);
   const [copiedHost, setCopiedHost] = useState(false);
   const [showTokenDetails, setShowTokenDetails] = useState(false);
+
+  // Self password change state
+  const [myNewPassword, setMyNewPassword] = useState("");
+  const [showMyPassword, setShowMyPassword] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const handleUpdateMyPassword = async (e) => {
+    e.preventDefault();
+    const cleanPass = myNewPassword.trim();
+    if (!cleanPass || cleanPass.length < 6) {
+      setPasswordError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setPasswordSaving(true);
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    try {
+      await api.put("/profile/password", { newPassword: cleanPass });
+      setPasswordSuccess("Password successfully changed and persisted to database!");
+      setMyNewPassword("");
+      setTimeout(() => setPasswordSuccess(""), 5000);
+    } catch (err) {
+      setPasswordError(err.response?.data?.message || "Failed to update password in database.");
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  const generateRandomPassword = () => {
+    const charset = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*";
+    let pass = "";
+    for (let i = 0; i < 12; i++) {
+      pass += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return pass;
+  };
 
   const fetchProfile = useCallback(async () => {
     setLoading(true);
@@ -321,6 +364,92 @@ export default function ProfilePage({ onLogout }) {
                     <span className="text-slate-200">24 Hours</span>
                   </div>
                 </div>
+              </section>
+
+              {/* Change Account Password Section */}
+              <section className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl backdrop-blur-sm space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+                    <Lock className="w-4 h-4 text-cyan-400" />
+                    <span>Change Account Password</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Direct Database Sync
+                  </span>
+                </div>
+
+                {passwordSuccess && (
+                  <div className="p-3 bg-emerald-950/60 border border-emerald-800 rounded-lg text-emerald-200 text-xs flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{passwordSuccess}</span>
+                  </div>
+                )}
+
+                {passwordError && (
+                  <div className="p-3 bg-rose-950/60 border border-rose-800 rounded-lg text-rose-200 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleUpdateMyPassword} className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                        New Password
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMyNewPassword(generateRandomPassword());
+                          setShowMyPassword(true);
+                        }}
+                        className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono underline cursor-pointer"
+                      >
+                        Generate Random Password
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showMyPassword ? "text" : "password"}
+                        placeholder="Enter new password (min 6 characters)"
+                        value={myNewPassword}
+                        onChange={(e) => setMyNewPassword(e.target.value)}
+                        className="w-full pl-3 pr-10 py-2 bg-slate-950 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowMyPassword(!showMyPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 cursor-pointer"
+                      >
+                        {showMyPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <p className="text-[11px] text-slate-500">
+                      Your credentials will be updated in MySQL / database.json immediately.
+                    </p>
+                    <button
+                      type="submit"
+                      disabled={passwordSaving || !myNewPassword || myNewPassword.length < 6}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-xs font-medium transition-colors cursor-pointer shrink-0 shadow-sm shadow-cyan-950/50"
+                    >
+                      {passwordSaving ? (
+                        <>
+                          <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Key className="w-3.5 h-3.5" />
+                          <span>Update Password</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
               </section>
             </div>
 

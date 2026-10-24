@@ -96,6 +96,7 @@ export default function UserManagement() {
   // Quick reset password modal
   const [resettingUser, setResettingUser] = useState(null);
   const [resetPasswordValue, setResetPasswordValue] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(true);
   const [resetSaving, setResetSaving] = useState(false);
   const [resetError, setResetError] = useState("");
 
@@ -182,7 +183,21 @@ export default function UserManagement() {
         prev.map((u) => (u.id === editingUser.id ? { ...u, ...response.data } : u))
       );
       setEditingUser(null);
-      setSuccessNotice(`User @${editingUser.username} updated in database.`);
+
+      if (editForm.newPassword && editForm.newPassword.trim()) {
+        setCreatedUserReceipt({
+          username: editingUser.username,
+          fullName: response.data.fullName || editingUser.fullName,
+          email: response.data.email || editingUser.email,
+          role: response.data.role || editingUser.role,
+          department: response.data.department || editingUser.department,
+          password: editForm.newPassword.trim(),
+        });
+        setSuccessNotice(`Password and profile for @${editingUser.username} successfully updated in database.`);
+      } else {
+        setSuccessNotice(`User @${editingUser.username} updated in database.`);
+      }
+
       setTimeout(() => setSuccessNotice(""), 4000);
     } catch (err) {
       setEditError(err.response?.data?.message || "Failed to update user.");
@@ -269,7 +284,8 @@ export default function UserManagement() {
   // Open quick reset password modal
   const handleOpenResetPassword = (user) => {
     setResettingUser(user);
-    setResetPasswordValue(generateRandomPassword());
+    setResetPasswordValue("");
+    setShowResetPassword(true);
     setResetError("");
   };
 
@@ -290,7 +306,7 @@ export default function UserManagement() {
         newPassword: resetPasswordValue.trim(),
       });
 
-      setSuccessNotice(`Password updated for user @${resettingUser.username}. Provide new password to them.`);
+      setSuccessNotice(`Password for user @${resettingUser.username} successfully updated in database.`);
       
       // Also open receipt for easy copying
       setCreatedUserReceipt({
@@ -303,6 +319,7 @@ export default function UserManagement() {
       });
 
       setResettingUser(null);
+      fetchUsers();
       setTimeout(() => setSuccessNotice(""), 4000);
     } catch (err) {
       setResetError(err.response?.data?.message || "Failed to update user password.");
@@ -1010,14 +1027,14 @@ export default function UserManagement() {
         </div>
       )}
 
-      {/* QUICK RESET PASSWORD MODAL */}
+      {/* QUICK RESET / SET PASSWORD MODAL */}
       {resettingUser && (
         <div
           role="dialog"
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in"
         >
-          <div className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-6 text-slate-100 space-y-4">
+          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-6 text-slate-100 space-y-4">
             <button
               type="button"
               onClick={() => setResettingUser(null)}
@@ -1028,11 +1045,13 @@ export default function UserManagement() {
 
             <div className="flex items-center gap-2.5 text-cyan-400">
               <Key className="w-5 h-5 shrink-0" />
-              <h3 className="text-base font-bold text-slate-100">Set User Password</h3>
+              <div>
+                <h3 className="text-base font-bold text-slate-100">Set User Password</h3>
+                <p className="text-xs text-slate-400">
+                  Update database login credentials for <strong className="text-cyan-300 font-mono">@{resettingUser.username}</strong> ({resettingUser.fullName}).
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-slate-400">
-              Provide a new password for <strong className="text-cyan-300 font-mono">@{resettingUser.username}</strong> ({resettingUser.fullName}).
-            </p>
 
             {resetError && (
               <div className="p-2.5 bg-rose-950/60 border border-rose-800 rounded-lg text-rose-200 text-xs flex items-center gap-2">
@@ -1041,34 +1060,62 @@ export default function UserManagement() {
               </div>
             )}
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                  New Password
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setResetPasswordValue(generateRandomPassword())}
-                  className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono underline cursor-pointer"
-                >
-                  Generate Strong
-                </button>
+            <div className="space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    New Password <span className="text-cyan-400">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetPasswordValue(generateRandomPassword());
+                      setShowResetPassword(true);
+                    }}
+                    className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono underline cursor-pointer"
+                  >
+                    Generate Strong Password
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showResetPassword ? "text" : "password"}
+                    placeholder="Enter new password (min 6 characters)"
+                    value={resetPasswordValue}
+                    onChange={(e) => setResetPasswordValue(e.target.value)}
+                    className="w-full pl-3 pr-10 py-2.5 bg-slate-950 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPassword(!showResetPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 cursor-pointer"
+                  >
+                    {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-              <input
-                type="text"
-                placeholder="Min 6 characters"
-                value={resetPasswordValue}
-                onChange={(e) => setResetPasswordValue(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-700/80 rounded-lg text-xs font-mono text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-              />
+
+              {/* Password criteria & database persistence notice */}
+              <div className="p-3 bg-slate-950/80 rounded-lg border border-slate-800 text-[11px] space-y-1.5 font-sans">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span>Requirement:</span>
+                  <span className={`font-mono font-medium ${resetPasswordValue.length >= 6 ? "text-emerald-400" : "text-amber-400"}`}>
+                    {resetPasswordValue.length}/6+ characters {resetPasswordValue.length >= 6 ? "✓" : ""}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-400 pt-1 border-t border-slate-800/80">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span>Will immediately reflect in database and audit logs.</span>
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => setResettingUser(null)}
                 disabled={resetSaving}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium cursor-pointer"
+                className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>
@@ -1076,9 +1123,19 @@ export default function UserManagement() {
                 type="button"
                 onClick={handleConfirmResetPassword}
                 disabled={resetSaving || !resetPasswordValue || resetPasswordValue.length < 6}
-                className="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-xs font-medium cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-xs font-medium cursor-pointer shadow-sm shadow-cyan-950/50"
               >
-                {resetSaving ? "Saving..." : "Update Password"}
+                {resetSaving ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Saving to Database...</span>
+                  </>
+                ) : (
+                  <>
+                    <Key className="w-3.5 h-3.5" />
+                    <span>Save to Database</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
