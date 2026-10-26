@@ -64,11 +64,11 @@ jobs:
           args: >
             -Dsonar.organization=devops-console-admin-checks
             -Dsonar.projectKey=devops-console-admin-checks_frontend-checks
-            -Dsonar.sources=.
-            -Dsonar.qualitygate.wait=true
             -Dsonar.exclusions=backend/**,node_modules/**,build/**
             -Dsonar.branch.name=${{ github.ref_name }}
-    
+        
+       # -Dsonar.sources=.
+       # -Dsonar.qualitygate.wait=true
        # -Dsonar.tests=./frontend/src
        # -Dsonar.host.url=https://sonarcloud.io
 

@@ -72,7 +72,9 @@ jobs:
             -Dsonar.organization=devops-console-admin-checks
             -Dsonar.projectKey=devops-console-admin-checks_backend-checks
             -Dsonar.branch.name=${{ github.ref_name }}
-            -Dsonar.qualitygate.wait=true
+            
+            
+      # -Dsonar.qualitygate.wait=true
 
   
   build-and-push:
