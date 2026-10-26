@@ -194,11 +194,27 @@ function getDb() {
 // Persist JSON database to disk
 function saveDb(data) {
   try {
-    const dir = path.dirname(DB_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    const candidates = [
+      DB_FILE,
+      path.resolve(process.cwd(), 'data/database.json'),
+      path.resolve(process.cwd(), '../data/database.json'),
+      path.resolve(import.meta.dirname, '../data/database.json'),
+      '/data/database.json',
+    ];
+    const written = new Set();
+    for (const file of candidates) {
+      if (written.has(file)) continue;
+      try {
+        const dir = path.dirname(file);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf-8');
+        written.add(file);
+      } catch {
+        // continue if permission or path doesn't apply
+      }
     }
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {
     console.error('Error writing DB_FILE:', e);
   }
@@ -398,7 +414,8 @@ function springBootMockPlugin() {
 
               const isPasswordValid = matched && cleanPass && (
                 matched.password === cleanPass ||
-                (matched.username === 'admin' && cleanPass === 'admin@589')
+                (matched.passwordHash && (matched.passwordHash === cleanPass || matched.passwordHash === `$2a$10$${cleanPass}`)) ||
+                (matched.username === 'admin' && !matched.password && cleanPass === 'admin@589')
               );
 
               if (isPasswordValid) {
@@ -639,9 +656,9 @@ function springBootMockPlugin() {
           return;
         }
 
-        // POST /api/users/:id/reset-password (ADMIN ONLY)
-        const resetPassMatch = url.pathname.match(/^\/api\/users\/(\d+)\/reset-password$/);
-        if (resetPassMatch && req.method === 'POST') {
+        // POST /api/users/:id/reset-password or PUT/POST /api/users/:id/password
+        const resetPassMatch = url.pathname.match(/^\/api\/users\/(\d+)\/(reset-password|password|change-password)$/);
+        if (resetPassMatch && (req.method === 'POST' || req.method === 'PUT')) {
           const userId = parseInt(resetPassMatch[1], 10);
           const caller = getAuthenticatedUser(req);
           if (!caller) {
@@ -649,19 +666,20 @@ function springBootMockPlugin() {
             res.setHeader('Content-Type', 'application/json');
             return res.end(JSON.stringify({ message: 'Missing token' }));
           }
-          if (caller.role !== 'ADMIN') {
+          if (caller.role !== 'ADMIN' && caller.id !== userId) {
             res.statusCode = 403;
             res.setHeader('Content-Type', 'application/json');
             res.setHeader('Access-Control-Allow-Origin', '*');
-            return res.end(JSON.stringify({ message: 'Access denied: Administrator privileges required to reset passwords' }));
+            return res.end(JSON.stringify({ message: 'Access denied: Administrator privileges required to change user passwords' }));
           }
 
           let body = '';
           req.on('data', chunk => { body += chunk; });
           req.on('end', () => {
             try {
-              const { newPassword } = JSON.parse(body || '{}');
-              const cleanPass = (newPassword || '').trim();
+              const parsed = JSON.parse(body || '{}');
+              const rawPass = parsed.newPassword || parsed.password || '';
+              const cleanPass = rawPass.trim();
               if (!cleanPass || cleanPass.length < 6) {
                 res.statusCode = 400;
                 res.setHeader('Content-Type', 'application/json');
@@ -677,6 +695,8 @@ function springBootMockPlugin() {
               }
 
               db.users[idx].password = cleanPass;
+              const pseudoSalt = crypto.createHash('sha256').update(cleanPass + 'salted_2026').digest('base64url').slice(0, 31);
+              db.users[idx].passwordHash = `$2a$10$${pseudoSalt}`;
               saveDb(db);
 
               logAudit({
@@ -685,18 +705,82 @@ function springBootMockPlugin() {
                 severity: 'WARN',
                 user: caller.username,
                 ipAddress: '10.0.12.44 (VPC)',
-                resource: `/api/users/${userId}`,
-                action: `Reset password for @${db.users[idx].username}`,
+                resource: `/api/users/${userId}/password`,
+                action: `Updated password for @${db.users[idx].username}`,
                 status: 'SUCCESS',
-                details: `Admin @${caller.username} updated credentials for user @${db.users[idx].username}.`,
+                details: `Admin @${caller.username} updated credentials for user @${db.users[idx].username} in database.json.`,
               });
 
               res.setHeader('Content-Type', 'application/json');
               res.setHeader('Access-Control-Allow-Origin', '*');
               return res.end(JSON.stringify({
+                success: true,
                 message: `Password updated successfully for @${db.users[idx].username}`,
                 username: db.users[idx].username,
                 newPassword: cleanPass
+              }));
+            } catch {
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json');
+              return res.end(JSON.stringify({ message: 'Malformed JSON payload' }));
+            }
+          });
+          return;
+        }
+
+        // PUT /api/profile/password or POST /api/profile/password
+        if ((url.pathname === '/api/profile/password' || url.pathname === '/api/profile/change-password') && (req.method === 'PUT' || req.method === 'POST')) {
+          const caller = getAuthenticatedUser(req);
+          if (!caller) {
+            res.statusCode = 401;
+            res.setHeader('Content-Type', 'application/json');
+            return res.end(JSON.stringify({ message: 'Missing token' }));
+          }
+
+          let body = '';
+          req.on('data', chunk => { body += chunk; });
+          req.on('end', () => {
+            try {
+              const parsed = JSON.parse(body || '{}');
+              const rawPass = parsed.newPassword || parsed.password || '';
+              const cleanPass = rawPass.trim();
+              if (!cleanPass || cleanPass.length < 6) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ message: 'New password must be at least 6 characters' }));
+              }
+
+              const db = getDb();
+              const idx = db.users.findIndex(u => u.id === caller.id || u.username.toLowerCase() === caller.username.toLowerCase());
+              if (idx === -1) {
+                res.statusCode = 404;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ message: 'User account not found' }));
+              }
+
+              db.users[idx].password = cleanPass;
+              const pseudoSalt = crypto.createHash('sha256').update(cleanPass + 'salted_2026').digest('base64url').slice(0, 31);
+              db.users[idx].passwordHash = `$2a$10$${pseudoSalt}`;
+              saveDb(db);
+
+              logAudit({
+                eventType: 'PASSWORD_RESET',
+                category: 'SECURITY',
+                severity: 'INFO',
+                user: caller.username,
+                ipAddress: '10.0.12.44 (VPC)',
+                resource: '/api/profile/password',
+                action: `Self password changed by @${caller.username}`,
+                status: 'SUCCESS',
+                details: `User @${caller.username} updated their own login credentials in database.`,
+              });
+
+              res.setHeader('Content-Type', 'application/json');
+              res.setHeader('Access-Control-Allow-Origin', '*');
+              return res.end(JSON.stringify({
+                success: true,
+                message: 'Your password was successfully updated in database.',
+                username: caller.username,
               }));
             } catch {
               res.statusCode = 400;
@@ -728,7 +812,7 @@ function springBootMockPlugin() {
           req.on('data', chunk => { body += chunk; });
           req.on('end', () => {
             try {
-              const { fullName, email, role, department, password } = JSON.parse(body || '{}');
+              const { fullName, email, role, department, password, newPassword } = JSON.parse(body || '{}');
               const db = getDb();
               const idx = db.users.findIndex(u => u.id === userId);
               if (idx === -1) {
@@ -764,8 +848,11 @@ function springBootMockPlugin() {
               }
               if (department) db.users[idx].department = department.trim();
 
-              if (password && password.trim().length >= 6) {
-                db.users[idx].password = password.trim();
+              const passToSet = (password || newPassword || '').trim();
+              if (passToSet && passToSet.length >= 6) {
+                db.users[idx].password = passToSet;
+                const pseudoSalt = crypto.createHash('sha256').update(passToSet + 'salted_2026').digest('base64url').slice(0, 31);
+                db.users[idx].passwordHash = `$2a$10$${pseudoSalt}`;
                 logAudit({
                   eventType: 'PASSWORD_RESET',
                   category: 'SECURITY',
@@ -775,7 +862,7 @@ function springBootMockPlugin() {
                   resource: `/api/users/${userId}`,
                   action: `Updated password for @${db.users[idx].username}`,
                   status: 'SUCCESS',
-                  details: `Password changed by admin @${caller.username}.`,
+                  details: `Password changed by admin @${caller.username} and persisted in database.`,
                 });
               }
 

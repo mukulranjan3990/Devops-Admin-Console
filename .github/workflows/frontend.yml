@@ -68,7 +68,8 @@ jobs:
             -Dsonar.sources=./frontend/src
             -Dsonar.tests=./frontend/src
             -Dsonar.qualitygate.wait=true
-
+    
+      
 
   build-and-push:
     name: Build and Push Docker Image

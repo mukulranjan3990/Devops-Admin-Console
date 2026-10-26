@@ -136,13 +136,22 @@ export default function UserWorkspace({ userProfile, onSwitchToProfile }) {
               </div>
             </div>
 
-            <button
-              onClick={onSwitchToProfile}
-              className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 border border-cyan-800/60 text-xs font-medium transition-colors cursor-pointer"
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>View Full Profile</span>
-            </button>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <button
+                onClick={onSwitchToProfile}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-colors cursor-pointer"
+              >
+                <Key className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Change Password</span>
+              </button>
+              <button
+                onClick={onSwitchToProfile}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 border border-cyan-800/60 text-xs font-medium transition-colors cursor-pointer"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>View Full Profile</span>
+              </button>
+            </div>
           </div>
 
           {/* User Details Grid */}
