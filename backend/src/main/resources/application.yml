@@ -7,6 +7,7 @@ spring:
     name: three-tier-backend
   lifecycle:
     timeout-per-shutdown-phase: 20s
+  
 
   datasource:
     url: jdbc:mysql://${RDS_HOSTNAME:localhost}:${RDS_PORT:3306}/${RDS_DB_NAME:adminportal}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -16,7 +17,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true        #by default it was flase, but I have changed it to true for debugging purpose, you can change it back to false in production
     open-in-view: false
     properties:

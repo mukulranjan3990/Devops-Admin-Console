@@ -88,6 +88,8 @@ jobs:
           sed -i 's/\${RDS_DB_NAME:[^}]*}/${{ secrets.RDS_DB_NAME }}/g' src/main/resources/application.yml
           sed -i 's/\${RDS_USERNAME:[^}]*}/${{ secrets.RDS_USERNAME }}/g' src/main/resources/application.yml
           sed -i 's/\${RDS_PASSWORD:[^}]*}/${{ secrets.RDS_PASSWORD }}/g' src/main/resources/application.yml
+          sed -i 's/ddl-auto:.*/ddl-auto: validate/' src/main/resources/application.yml
+
 
 
       # IF SED CMD WILL NOT WORK THE THIS ENVIRONMENT VARIABLE WILL BE USED INSTEAD OF THE SECRET, SO MAKE SURE 
