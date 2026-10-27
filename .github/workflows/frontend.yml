@@ -75,6 +75,8 @@ jobs:
        # -Dsonar.qualitygate.wait=true
        # -Dsonar.tests=./frontend/src
        # -Dsonar.host.url=https://sonarcloud.io
+
+
 #JOB-2: BUILD AND PUSH DOCKER IMAGE TO AWS-ESR
   build-and-push-ecr:
     name: Build and Push Docker Image to AWS ECR
@@ -96,7 +98,7 @@ jobs:
         with:
           access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          registry: ${{ secrets.REGISTRY_FRONTEND }}
+          registry: ${{ secrets.REGISTRY }}
           repo: frontend-devops-console
           region: ${{ env.REGION }}
           tags: "latest,${{ github.run_number }}"
