@@ -16,7 +16,11 @@ on:
 permissions:
   contents: read
 
+env:
+  REGION: us-east-1  
 jobs:
+
+#JON-1: FRONTEND PIPELINE: TEST, LINT, SONARQUBE ANALYSIS
   test:
     name: Test and Lint
     runs-on: ubuntu-latest
@@ -71,11 +75,40 @@ jobs:
        # -Dsonar.qualitygate.wait=true
        # -Dsonar.tests=./frontend/src
        # -Dsonar.host.url=https://sonarcloud.io
+#JOB-2: BUILD AND PUSH DOCKER IMAGE TO AWS-ESR
+  build-and-push-ecr:
+    name: Build and Push Docker Image to AWS ECR
+    needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: upload image to ECR
+        uses: appleboy/docker-ecr-action@master
+        with:
+          access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          registry: ${{ secrets.REGISTRY_FRONTEND }}
+          repo: frontend-devops-console
+          region: ${{ env.REGION }}
+          tags: "latest,${{ github.run_number }}"
+          daemon_off: false
+          dockerfile: ./frontend/Dockerfile
+          context: ./frontend
+
+# JOB-3: BUILD AND PUSH DOCKER IMAGE TO DOCKER HUB
 
   build-and-push:
     name: Build and Push Docker Image
     needs: test
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     permissions:
