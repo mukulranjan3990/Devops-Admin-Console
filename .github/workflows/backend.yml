@@ -14,6 +14,7 @@ on:
 
 env:
   REGION: us-east-1
+
 jobs:
 
 # JOB-1: BACKEND PIPELINE: TEST, LINT, SONARQUBE ANALYSIS
@@ -82,11 +83,22 @@ jobs:
       # Inject AWS RDS Secrets into application.yml BEFORE building
       - name: Inject RDS Credentials into application.yml
         run: |
-          sed -i 's/RDS_HOSTNAME:.*/RDS_HOSTNAME:${{ secrets.RDS_HOSTNAME }}/' src/main/resources/application.yml
-          sed -i 's/RDS_PORT:.*/RDS_PORT:3306/' src/main/resources/application.yml
-          sed -i 's/RDS_DB_NAME:.*/RDS_DB_NAME:${{ secrets.RDS_DB_NAME }}/' src/main/resources/application.yml
-          sed -i 's/RDS_USERNAME:.*/RDS_USERNAME:${{ secrets.RDS_USERNAME }}/' src/main/resources/application.yml
-          sed -i 's/RDS_PASSWORD:.*/RDS_PASSWORD:${{ secrets.RDS_PASSWORD }}/' src/main/resources/application.yml
+          sed -i 's/\${RDS_HOSTNAME:[^}]*}/${{ secrets.RDS_HOSTNAME }}/g' src/main/resources/application.yml
+          sed -i 's/\${RDS_PORT:[^}]*}/3306/g' src/main/resources/application.yml
+          sed -i 's/\${RDS_DB_NAME:[^}]*}/${{ secrets.RDS_DB_NAME }}/g' src/main/resources/application.yml
+          sed -i 's/\${RDS_USERNAME:[^}]*}/${{ secrets.RDS_USERNAME }}/g' src/main/resources/application.yml
+          sed -i 's/\${RDS_PASSWORD:[^}]*}/${{ secrets.RDS_PASSWORD }}/g' src/main/resources/application.yml
+
+
+      # IF SED CMD WILL NOT WORK THE THIS ENVIRONMENT VARIABLE WILL BE USED INSTEAD OF THE SECRET, SO MAKE SURE 
+      # TO SET THE SECRETS IN GITHUB REPO SETTINGS
+        # env:
+        #   RDS_HOSTNAME: ${{ secrets.RDS_HOSTNAME }}
+        #   RDS_PORT: 3306
+        #   RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
+        #   RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
+        #   RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+
 
 # THIS APPLICATION CREATED BY THE GOOGLE STUDIO AI, SO I AM COMMENTING 
 # OUT THE CHECKSTYLE STEP TO AVOID FAILING THE PIPELINE DUE TO GENERATED CODE
@@ -130,24 +142,6 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-
-      # # Step 2: Search and Replace Database Secrets in application.yml
-      # - name: Search and Replace Datasource Secrets
-      #   env:
-      #     DB_URL: ${{ secrets.DB_URL }}
-      #     DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      #     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      #   run: |
-      #     TARGET_FILE="./backend/src/main/resources/application.yml"
-          
-      #     # Replace placeholders with secrets from GitHub Actions Secrets
-      #     sed -i "s|DB_URL_PLACEHOLDER|${DB_URL}|g" $TARGET_FILE
-      #     sed -i "s|DB_USERNAME_PLACEHOLDER|${DB_USERNAME}|g" $TARGET_FILE
-      #     sed -i "s|DB_PASSWORD_PLACEHOLDER|${DB_PASSWORD}|g" $TARGET_FILE
-
-      #     # Verification step (Masked sensitive outputs automatically by GitHub Actions)
-      #     echo "Datasource replacement complete for $TARGET_FILE"
-         
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
