@@ -1,5 +1,6 @@
 package com.devops.portal.config;
 
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,8 +12,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+
+
 import java.util.Arrays;
 import java.util.List;
+
+
+
+
+
 
 @Configuration
 @EnableWebSecurity
@@ -29,10 +37,12 @@ public class CorsConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/profile").permitAll() // Authenticated via Bearer token in Controller/JwtUtil
                 .anyRequest().permitAll()
             );
+
 
         return http.build();
     }
